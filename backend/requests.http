@@ -1,0 +1,61 @@
+#### Get all clubs
+GET http://localhost:1337/api/clubs
+
+#### Get club by ID
+GET http://localhost:1337/api/clubs/oxt40g6l2on0n5b9yxfyafyz
+
+#### log in
+POST http://localhost:1337/api/auth/local
+Content-Type: application/json
+
+{
+  "identifier": "jack@uni.edu",
+  "password": "jack@uni.edu"
+}
+
+### login as ambassador
+POST http://localhost:1337/api/auth/local
+Content-Type: application/json
+
+{
+  "identifier": "john@uni.edu",
+  "password": "john@uni.edu"
+}
+
+###
+
+### approve a club
+POST http://localhost:1337/api/clubs/oxt40g6l2on0n5b9yxfyafyz/approve
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzgxNjUwMTIzLCJleHAiOjE3ODQyNDIxMjN9.jj6FLUBV7yPjg3tQDVJILjdAWABvRhl-eRTykhgtOLE
+
+###
+
+### vote for a club
+POST http://localhost:1337/api/clubs/oxt40g6l2on0n5b9yxfyafyz/vote
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWF0IjoxNzgxNjQ3Nzk2LCJleHAiOjE3ODQyMzk3OTZ9.2-PqspkNYzBMMzHPtuG7udsydq7ZXXiwwSYO49jvKpg
+
+
+### Populate and permissions check
+GET http://localhost:1337/api/clubs?populate=*
+
+### get the news
+GET http://localhost:1337/api/news
+
+### get the events
+GET http://localhost:1337/api/events
+
+####Get the projects
+GET http://localhost:1337/api/projects
+
+### Test 1: list all users without auth (needs Public > Users > find)
+GET http://localhost:1337/api/users
+
+### Test 2: list users with role populated (no auth)
+GET http://localhost:1337/api/users?populate=role
+
+### Test 3: list users with role populated (with ambassador JWT)
+GET http://localhost:1337/api/users?populate=role
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywiaWF0IjoxNzgxNjUwMTIzLCJleHAiOjE3ODQyNDIxMjN9.jj6FLUBV7yPjg3tQDVJILjdAWABvRhl-eRTykhgtOLE
+
+### Get ambassadors
+  GET http://localhost:1337/api/ambassadors
