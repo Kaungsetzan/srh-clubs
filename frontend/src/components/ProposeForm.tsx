@@ -43,6 +43,37 @@ export default function ProposeForm() {
         </span>
       </div>
 
+      <div className="form-group">
+        <label className="form-label" htmlFor="club-email">Contact email</label>
+        <input
+          id="club-email"
+          name="email"
+          className="form-input"
+          type="email"
+          placeholder="e.g. chessclub@srh.de"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label" htmlFor="club-max-members">Maximum members</label>
+        <input
+          id="club-max-members"
+          name="maxMembers"
+          className="form-input"
+          type="number"
+          min={1}
+          step={1}
+          placeholder="e.g. 20"
+          required
+        />
+      </div>
+
+      <div className="form-group">
+        <label className="form-label" htmlFor="club-cover">Cover image</label>
+        <input id="club-cover" name="cover" className="form-input" type="file" accept="image/*" />
+      </div>
+
       <div>
         <button type="submit" className="srh-btn" disabled={pending}>
           {pending ? 'Submitting…' : 'Submit proposal'}

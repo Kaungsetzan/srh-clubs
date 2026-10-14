@@ -56,6 +56,18 @@
     },
     "club_event": {
       "type": "string"
+    },
+    "rejectionReason": {
+      "type": "text"
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "maxMembers": {
+      "type": "integer",
+      "required": true,
+      "min": 1
     }
   }
 }

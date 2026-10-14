@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getClubs, type ClubStatus } from "@/lib/strapi";
+import { getClubs, getStrapiMediaUrl, type ClubStatus } from "@/lib/strapi";
+import { getCurrentUser } from "@/lib/auth";
 
 const VOTE_THRESHOLD = 10;
 
@@ -14,6 +15,8 @@ function StatusBadge({ status }: { status: ClubStatus }) {
 }
 
 export default async function ClubsPage() {
+  const currentUser = await getCurrentUser();
+
   let clubs;
   try {
     clubs = await getClubs();
@@ -38,9 +41,12 @@ export default async function ClubsPage() {
     );
   }
 
+  const myClub = currentUser
+    ? clubs.find((c) => c.founder?.documentId === currentUser.documentId)
+    : undefined;
   const approvedClubs = clubs.filter((c) => c.club_status === "approved");
   const pendingClubs = clubs
-    .filter((c) => c.club_status !== "approved")
+    .filter((c) => c.club_status === "pending" || c.club_status === "eligible")
     .sort((a, b) => (b.votes?.length ?? 0) - (a.votes?.length ?? 0));
 
   return (
@@ -66,6 +72,13 @@ export default async function ClubsPage() {
         </Link>
       </div>
 
+      {myClub && (
+        <div style={{ marginBottom: "2.5rem" }}>
+          <h2 className="srh-section-title">My Clubs</h2>
+          <ClubGrid clubs={[myClub]} />
+        </div>
+      )}
+
       {approvedClubs.length > 0 && (
         <div style={{ marginBottom: "2.5rem" }}>
           <h2 className="srh-section-title">Official clubs</h2>
@@ -75,7 +88,7 @@ export default async function ClubsPage() {
 
       {pendingClubs.length > 0 && (
         <div>
-          <h2 className="srh-section-title">Pending</h2>
+          <h2 className="srh-section-title">Pending Clubs</h2>
           <ClubGrid clubs={pendingClubs} />
         </div>
       )}
@@ -89,8 +102,15 @@ function ClubGrid({ clubs }: { clubs: Awaited<ReturnType<typeof getClubs>> }) {
       {clubs.map((club) => {
         const voteCount = club.votes?.length ?? 0;
         const pct = Math.min((voteCount / VOTE_THRESHOLD) * 100, 100);
+        const coverUrl = getStrapiMediaUrl(club.cover);
+        const isCoverImage = club.cover?.mime?.startsWith("image/") ?? false;
         return (
           <div key={club.documentId} className="club-card">
+            {coverUrl && isCoverImage ? (
+              <img src={coverUrl} alt="" className="card-cover" />
+            ) : (
+              <div className="card-cover card-cover-placeholder">No image</div>
+            )}
             <div className="club-card-header">
               <span className="club-card-title">{club.name}</span>
               <StatusBadge status={club.club_status} />
@@ -100,7 +120,7 @@ function ClubGrid({ clubs }: { clubs: Awaited<ReturnType<typeof getClubs>> }) {
                 ? club.description.slice(0, 140) + "…"
                 : club.description}
             </p>
-            {club.club_status !== 'approved' && (
+            {club.club_status !== "approved" && (
               <div className="vote-progress">
                 <div className="vote-progress-bar">
                   <div

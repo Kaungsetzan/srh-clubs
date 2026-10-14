@@ -38,6 +38,10 @@ export default function CreateProjectForm() {
             <label className="form-label" htmlFor="project-description">Description</label>
             <textarea id="project-description" name="description" className="form-textarea" rows={4} />
           </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="project-cover">Cover image</label>
+            <input id="project-cover" name="cover" className="form-input" type="file" accept="image/*" />
+          </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button type="submit" className="srh-btn" disabled={pending}>
               {pending ? 'Creating…' : 'Create'}

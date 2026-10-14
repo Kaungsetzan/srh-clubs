@@ -1,4 +1,4 @@
-import { getProjects, type ProjectStatus } from '@/lib/strapi';
+import { getProjects, getStrapiMediaUrl, type ProjectStatus } from '@/lib/strapi';
 import { getCurrentUser } from '@/lib/auth';
 import CreateProjectForm from '@/components/CreateProjectForm';
 
@@ -37,8 +37,16 @@ export default async function ProjectsPage() {
         <div className="empty-state"><h2>No projects yet.</h2></div>
       ) : (
         <div className="content-list">
-          {items.map((item) => (
+          {items.map((item) => {
+            const coverUrl = getStrapiMediaUrl(item.cover);
+            const isCoverImage = item.cover?.mime?.startsWith('image/') ?? false;
+            return (
             <div key={item.documentId} className="content-card">
+              {coverUrl && isCoverImage ? (
+                <img src={coverUrl} alt="" className="card-cover" />
+              ) : (
+                <div className="card-cover card-cover-placeholder">No image</div>
+              )}
               <div className="content-card-header">
                 <span className="content-card-title">{item.title}</span>
                 <StatusBadge status={item.status} />
@@ -49,7 +57,8 @@ export default async function ProjectsPage() {
                 </p>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

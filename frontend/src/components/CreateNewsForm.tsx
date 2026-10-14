@@ -31,6 +31,10 @@ export default function CreateNewsForm() {
             <label className="form-label" htmlFor="news-content">Content</label>
             <textarea id="news-content" name="content" className="form-textarea" rows={5} />
           </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="news-cover">Cover image</label>
+            <input id="news-cover" name="cover" className="form-input" type="file" accept="image/*" />
+          </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button type="submit" className="srh-btn" disabled={pending}>
               {pending ? 'Creating…' : 'Create'}

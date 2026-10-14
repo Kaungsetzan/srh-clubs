@@ -47,6 +47,9 @@ export type StrapiClub = {
   approvedBy?: StrapiUser;
   cover?: StrapiMedia;
   club_event?: string | null;  // plain text field in the Strapi schema, not a relation
+  rejectionReason?: string | null;
+  email?: string | null;       // absent on clubs created before this field existed
+  maxMembers?: number | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -118,6 +121,7 @@ export type StrapiNews = {
   content?: string;
   publishedDate?: string;
   author?: StrapiUser;
+  cover?: StrapiMedia;
   createdAt: string;
 };
 
@@ -128,6 +132,7 @@ export type StrapiEvent = {
   description?: string;
   date: string;
   location?: string;
+  cover?: StrapiMedia;
   createdAt: string;
 };
 
@@ -139,6 +144,7 @@ export type StrapiProject = {
   title: string;
   description?: string;
   status: ProjectStatus;
+  cover?: StrapiMedia;
   createdAt: string;
 };
 
@@ -165,6 +171,26 @@ export async function getProjects(): Promise<StrapiProject[]> {
 
 export async function getAmbassadors(): Promise<StrapiAmbassador[]> {
   return strapiGet<StrapiAmbassador[]>('/ambassadors');
+}
+
+// Strapi 5 uploads are a separate step from entry creation: POST the file to
+// /api/upload first, then set the returned numeric id on the entry's media field.
+export async function strapiUploadFile(file: File, token: string): Promise<StrapiMedia> {
+  const form = new FormData();
+  form.append('files', file);
+
+  const res = await fetch(`${STRAPI_URL}/api/upload`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error?.message ?? `Image upload failed: ${res.status}`);
+  }
+  const uploaded = (await res.json()) as StrapiMedia[];
+  return uploaded[0];
 }
 
 // Authenticated wrappers — pass token from getToken() in lib/auth.ts

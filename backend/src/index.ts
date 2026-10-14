@@ -162,8 +162,34 @@ export default {
     await seedNews(strapi);
     await seedEvents(strapi);
     await seedProjects(strapi);
+    await ensurePermissions(strapi, 'plugin::upload.content-api.upload', ['Authenticated', 'Ambassador']);
+    await ensurePermissions(strapi, 'api::club.club.reject', ['Ambassador']);
+    await ensurePermissions(strapi, 'api::club.club.scheduleEvent', ['Authenticated', 'Ambassador']);
   },
 };
+
+// Custom controller actions (and the Upload plugin's content-API action) aren't
+// covered by any content-type schema, so they don't exist as permissions until
+// someone flips them on manually in Settings → Users & Permissions → Roles.
+// Grant them here on every boot instead (idempotent — skips roles that already
+// have the permission) so the app works without an admin-panel setup step.
+async function ensurePermissions(strapi: Core.Strapi, action: string, roleNames: string[]) {
+  const roles = await (strapi as any)
+    .query('plugin::users-permissions.role')
+    .findMany({ where: { name: { $in: roleNames } } });
+
+  for (const role of roles) {
+    const existing = await (strapi as any)
+      .query('plugin::users-permissions.permission')
+      .findOne({ where: { action, role: role.id } });
+
+    if (!existing) {
+      await (strapi as any)
+        .query('plugin::users-permissions.permission')
+        .create({ data: { action, role: role.id } });
+    }
+  }
+}
 
 async function seedNews(strapi: Core.Strapi) {
   const existing = await strapi.documents('api::news-item.news-item').findMany({ status: 'published' });

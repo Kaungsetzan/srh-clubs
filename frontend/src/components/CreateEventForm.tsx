@@ -39,6 +39,10 @@ export default function CreateEventForm() {
             <label className="form-label" htmlFor="event-description">Description</label>
             <textarea id="event-description" name="description" className="form-textarea" rows={4} />
           </div>
+          <div className="form-group">
+            <label className="form-label" htmlFor="event-cover">Cover image</label>
+            <input id="event-cover" name="cover" className="form-input" type="file" accept="image/*" />
+          </div>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button type="submit" className="srh-btn" disabled={pending}>
               {pending ? 'Creating…' : 'Create'}

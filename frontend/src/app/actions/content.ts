@@ -1,7 +1,13 @@
 'use server';
 import { revalidatePath } from 'next/cache';
 import { getToken } from '@/lib/auth';
-import { strapiPost } from '@/lib/strapi';
+import { strapiPost, strapiUploadFile } from '@/lib/strapi';
+
+async function uploadCover(formData: FormData, token: string): Promise<number | undefined> {
+  const coverFile = formData.get('cover');
+  if (!(coverFile instanceof File) || coverFile.size === 0) return undefined;
+  return (await strapiUploadFile(coverFile, token)).id;
+}
 
 export async function createNewsAction(_prev: { error?: string } | null, formData: FormData) {
   const token = await getToken();
@@ -12,7 +18,8 @@ export async function createNewsAction(_prev: { error?: string } | null, formDat
   if (!title) return { error: 'Title is required.' };
 
   try {
-    await strapiPost('/news', { data: { title, content } }, token);
+    const cover = await uploadCover(formData, token);
+    await strapiPost('/news', { data: { title, content, ...(cover ? { cover } : {}) } }, token);
     revalidatePath('/news');
     return { error: undefined };
   } catch (e: unknown) {
@@ -33,7 +40,8 @@ export async function createEventAction(_prev: { error?: string } | null, formDa
   if (!date) return { error: 'Date is required.' };
 
   try {
-    await strapiPost('/events', { data: { title, description, date, location } }, token);
+    const cover = await uploadCover(formData, token);
+    await strapiPost('/events', { data: { title, description, date, location, ...(cover ? { cover } : {}) } }, token);
     revalidatePath('/events');
     return { error: undefined };
   } catch (e: unknown) {
@@ -52,7 +60,8 @@ export async function createProjectAction(_prev: { error?: string } | null, form
   if (!title) return { error: 'Title is required.' };
 
   try {
-    await strapiPost('/projects', { data: { title, description, status } }, token);
+    const cover = await uploadCover(formData, token);
+    await strapiPost('/projects', { data: { title, description, status, ...(cover ? { cover } : {}) } }, token);
     revalidatePath('/projects');
     return { error: undefined };
   } catch (e: unknown) {

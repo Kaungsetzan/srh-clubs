@@ -25,6 +25,13 @@
         "ongoing",
         "completed"
       ]
+    },
+    "cover": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }

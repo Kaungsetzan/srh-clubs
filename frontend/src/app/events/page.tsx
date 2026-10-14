@@ -1,4 +1,4 @@
-import { getEvents } from '@/lib/strapi';
+import { getEvents, getStrapiMediaUrl } from '@/lib/strapi';
 import { getCurrentUser } from '@/lib/auth';
 import CreateEventForm from '@/components/CreateEventForm';
 
@@ -33,8 +33,16 @@ export default async function EventsPage() {
         <div className="empty-state"><h2>No events yet.</h2></div>
       ) : (
         <div className="content-list">
-          {items.map((item) => (
+          {items.map((item) => {
+            const coverUrl = getStrapiMediaUrl(item.cover);
+            const isCoverImage = item.cover?.mime?.startsWith('image/') ?? false;
+            return (
             <div key={item.documentId} className="content-card">
+              {coverUrl && isCoverImage ? (
+                <img src={coverUrl} alt="" className="card-cover" />
+              ) : (
+                <div className="card-cover card-cover-placeholder">No image</div>
+              )}
               <div className="content-card-header">
                 <span className="content-card-title">{item.title}</span>
               </div>
@@ -48,7 +56,8 @@ export default async function EventsPage() {
                 </p>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

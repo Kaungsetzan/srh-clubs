@@ -4,8 +4,9 @@ import { getClub, getStrapiMediaUrl, type ClubStatus } from '@/lib/strapi';
 import { getCurrentUser, getToken } from '@/lib/auth';
 import VoteButton from '@/components/VoteButton';
 import ApproveButton from '@/components/ApproveButton';
+import RejectButton from '@/components/RejectButton';
+import ScheduleEventForm from '@/components/ScheduleEventForm';
 import MembersList from '@/components/MembersList';
-import SeedVotesButton from '@/components/SeedVotesButton';
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL ?? 'http://localhost:1337';
 const VOTE_THRESHOLD = 10;
@@ -38,6 +39,7 @@ export default async function ClubDetailPage({
 
   const isLoggedIn = currentUser !== null;
   const isAmbassador = currentUser?.role?.name === 'Ambassador';
+  const isFounder = isLoggedIn && currentUser.documentId === club.founder?.documentId;
   const clubStatus = club.club_status;
   const isApproved = clubStatus === 'approved';
   const coverUrl = getStrapiMediaUrl(club.cover);
@@ -124,6 +126,20 @@ export default async function ClubDetailPage({
           </div>
 
           <div className="detail-section">
+            <h2 className="srh-section-title">Club Info</h2>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem' }}>
+              <div>
+                <div className="detail-label">Contact email</div>
+                <div className="detail-value">{club.email ?? '—'}</div>
+              </div>
+              <div>
+                <div className="detail-label">Maximum members</div>
+                <div className="detail-value">{club.maxMembers ?? '—'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="detail-section">
             <h2 className="srh-section-title">Events</h2>
             <div className="club-detail-events-card">
               {club.club_event ? (
@@ -131,26 +147,13 @@ export default async function ClubDetailPage({
               ) : (
                 <p style={{ color: 'var(--srh-muted)', fontSize: '0.875rem' }}>No events scheduled.</p>
               )}
+              {isFounder && clubStatus === 'approved' && (
+                <ScheduleEventForm documentId={club.documentId} />
+              )}
             </div>
           </div>
 
           <div style={{ marginTop: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-              {canVote && (
-                <VoteButton documentId={club.documentId} voteCount={voteCount} />
-              )}
-              {!isLoggedIn && clubStatus !== 'approved' && clubStatus !== 'rejected' && (
-                <Link href="/login" className="srh-btn" style={{ textDecoration: 'none' }}>
-                  Log in to vote
-                </Link>
-              )}
-              {isAmbassador && clubStatus !== 'approved' && clubStatus !== 'rejected' && (
-                <ApproveButton documentId={club.documentId} eligible={clubStatus === 'eligible'} />
-              )}
-              {isAmbassador && process.env.NODE_ENV !== 'production' && clubStatus !== 'approved' && clubStatus !== 'rejected' && (
-                <SeedVotesButton documentId={club.documentId} />
-              )}
-            </div>
             {hasVoted && clubStatus !== 'approved' && clubStatus !== 'rejected' && (
               <p style={{ color: 'var(--srh-muted)', fontSize: '0.875rem', margin: 0 }}>
                 You have already voted for this club.
@@ -165,7 +168,7 @@ export default async function ClubDetailPage({
               <p style={{ color: 'var(--srh-muted)', fontSize: '0.875rem', margin: 0 }}>
                 {clubStatus === 'approved'
                   ? 'This club has been approved — voting is closed.'
-                  : 'This proposal was rejected.'}
+                  : `This proposal was rejected.${club.rejectionReason ? ` Reason: ${club.rejectionReason}` : ''}`}
               </p>
             )}
           </div>
@@ -183,6 +186,23 @@ export default async function ClubDetailPage({
                 <div className="vote-progress-bar">
                   <div className="vote-progress-fill" style={{ width: `${pct}%` }} />
                 </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: '0.6rem', alignItems: 'center', marginTop: '1rem' }}>
+                {canVote && (
+                  <VoteButton documentId={club.documentId} voteCount={voteCount} />
+                )}
+                {!isLoggedIn && clubStatus !== 'rejected' && (
+                  <Link href="/login" className="srh-btn" style={{ textDecoration: 'none' }}>
+                    Log in to vote
+                  </Link>
+                )}
+                {isAmbassador && clubStatus !== 'rejected' && (
+                  <ApproveButton documentId={club.documentId} eligible={clubStatus === 'eligible'} />
+                )}
+                {isAmbassador && clubStatus !== 'rejected' && (
+                  <RejectButton documentId={club.documentId} />
+                )}
               </div>
             </div>
           ) : (
